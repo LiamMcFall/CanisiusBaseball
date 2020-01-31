@@ -31,6 +31,7 @@ blastClean <- function(blastFrame){
   blastFrame$fullDate <- mdy_hms(blastFrame$Date)
   blastFrame$Date <- date(blastFrame$fullDate)
   blastFrame$Name <- factor(blastFrame$Name)
+  blastFrame
   
 }
 
