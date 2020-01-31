@@ -65,27 +65,38 @@ print(burlingameGrouped)
 
 burlingameSwingCount <- burlingameSub %>%
   group_by(week) %>%
-  tally(name = "# Swings") %>%
-  t() %>%
-  as.data.frame()
-
-colnames(burlingameSwingCount) <- c(paste("Week", burlingameSwingCount[1,1]), paste("Week", burlingameSwingCount[1,2]))
-burlingameSwingCount <- burlingameSwingCount[-1,]
+  tally(name = "# Swings")
 
 print(burlingameSwingCount)
 
 ```
 
+```{r rotVope}
 
-
-
-```{r}
-
-burlingamegg <- ggplot(burlingameSub, aes(x = Bat.Speed..mph., y = Attack.Angle..deg.))
-
-burlingamegg +
+ggplot(burlingameSub, aes(x = On.Plane.Efficiency...., y = Rotational.Acceleration..g.)) +
   geom_encircle(aes(fill = week), alpha = .5, expand = .01) +
-  geom_point(aes(color = week))
+  geom_point(aes(color = week)) +
+  labs(y = 'Rotational Acceleration (g)', x = 'On Plane Efficieny (%)')
+
+
+```
+
+
+```{r attackVspeed}
+
+ggplot(burlingameSub, aes(x = Bat.Speed..mph., y = Attack.Angle..deg.)) +
+  geom_encircle(aes(fill = week), alpha = .5, expand = .01) +
+  geom_point(aes(color = week)) +
+  labs(y = 'Attack Angle (deg)', x = 'Bat Speed (mph)')
+
+```
+
+```{r rotVcommit}
+
+ggplot(burlingameSub, aes(x = (Time.to.Contact..sec. * 1000), y = Rotational.Acceleration..g.)) +
+  geom_encircle(aes(fill = week), alpha = .5, expand = .01) +
+  geom_point(aes(color = week)) +
+  labs(y = 'Rotational Acceleration (g)', x = 'Time to Contact (ms)')
 
 ```
 
