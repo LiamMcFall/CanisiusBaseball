@@ -6,7 +6,11 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(
+	echo = FALSE,
+	message = FALSE,
+	warning = FALSE
+)
 ```
 
 ```{r}
@@ -18,6 +22,7 @@ library(tidyr)
 library(magrittr)
 library(ggalt)
 library(tibble)
+library(gridExtra)
 
 ```
 Load data
@@ -31,7 +36,13 @@ burlingame$week <- as.factor(isoweek(burlingame$Date))
 
 ```
 
-Subset last 2 weeks of data for the player
+Subset last 2 weeks of data for the player using iso standard week formatting. M-S
+
+ie. Week 1 of 2020 was 12/30/19 - 01/05/20
+
+Week 3 - 01/13/20 - 01/19/20
+
+Week 4 - 01/20/20 - 01/26/20
 
 ```{r}
 
@@ -61,19 +72,17 @@ burlingameGrouped[,1] <- as.numeric(as.character(burlingameGrouped[,1]))
 burlingameGrouped[,2] <- as.numeric(as.character(burlingameGrouped[,2]))
 burlingameGrouped$Difference <- (burlingameGrouped[,2] - burlingameGrouped[,1])
 
-print(burlingameGrouped)
-
 burlingameSwingCount <- burlingameSub %>%
   group_by(week) %>%
   tally(name = "# Swings")
 
-print(burlingameSwingCount)
-
 ```
+
+Experimentation with charts from the pdf posted in slack
 
 ```{r rotVope}
 
-ggplot(burlingameSub, aes(x = On.Plane.Efficiency...., y = Rotational.Acceleration..g.)) +
+rotVope <- ggplot(burlingameSub, aes(x = On.Plane.Efficiency...., y = Rotational.Acceleration..g.)) +
   geom_encircle(aes(fill = week), alpha = .5, expand = .01) +
   geom_point(aes(color = week)) +
   labs(y = 'Rotational Acceleration (g)', x = 'On Plane Efficieny (%)')
@@ -81,10 +90,9 @@ ggplot(burlingameSub, aes(x = On.Plane.Efficiency...., y = Rotational.Accelerati
 
 ```
 
-
 ```{r attackVspeed}
 
-ggplot(burlingameSub, aes(x = Bat.Speed..mph., y = Attack.Angle..deg.)) +
+attackVspeed <- ggplot(burlingameSub, aes(x = Bat.Speed..mph., y = Attack.Angle..deg.)) +
   geom_encircle(aes(fill = week), alpha = .5, expand = .01) +
   geom_point(aes(color = week)) +
   labs(y = 'Attack Angle (deg)', x = 'Bat Speed (mph)')
@@ -93,10 +101,38 @@ ggplot(burlingameSub, aes(x = Bat.Speed..mph., y = Attack.Angle..deg.)) +
 
 ```{r rotVcommit}
 
-ggplot(burlingameSub, aes(x = (Time.to.Contact..sec. * 1000), y = Rotational.Acceleration..g.)) +
+rotVcommit <- ggplot(burlingameSub, aes(x = (Time.to.Contact..sec. * 1000), y = Rotational.Acceleration..g.)) +
   geom_encircle(aes(fill = week), alpha = .5, expand = .01) +
   geom_point(aes(color = week)) +
   labs(y = 'Rotational Acceleration (g)', x = 'Time to Contact (ms)')
+
+```
+
+```{r conVvert}
+
+conVvert <- ggplot(burlingameSub, aes(x = Vertical.Bat.Angle..deg., y = Connection.at.Impact..deg.)) +
+  geom_encircle(aes(fill = week), alpha = .5, expand = .01) +
+  geom_point(aes(color = week)) +
+  labs(y = 'Connection at Impact (deg)', x = 'Vertical Bat Angle (deg)') +
+  scale_x_reverse()
+
+```
+
+```{r earlyconVvert}
+
+earlyconVvert <- ggplot(burlingameSub, aes(x = Vertical.Bat.Angle..deg., y = Early.Connection..deg.)) +
+  geom_encircle(aes(fill = week), alpha = .5, expand = .01) +
+  geom_point(aes(color = week)) +
+  labs(y = 'Early Connection (deg)', x = 'Vertical Bat Angle (deg)') +
+  scale_x_reverse()
+
+```
+
+```{r}
+
+print(burlingameSwingCount)
+print(burlingameGrouped)
+grid.arrange(attackVspeed, rotVope, rotVcommit, conVvert, earlyconVvert, nrow = 3)
 
 ```
 
