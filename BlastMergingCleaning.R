@@ -28,9 +28,9 @@ aggregateBlast <- function(dataDir){
 
 blastClean <- function(blastFrame){
   
-  blastFrame$fullDate <- mdy_hms(blastTeam2019$Date)
-  blastFrame$Date <- date(blastTeam2019$fullDate)
-  blastFrame$Name <- factor(blastTeam2019$Name)
+  blastFrame$fullDate <- mdy_hms(blastFrame$Date)
+  blastFrame$Date <- date(blastFrame$fullDate)
+  blastFrame$Name <- factor(blastFrame$Name)
   
 }
 
