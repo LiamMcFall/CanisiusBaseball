@@ -14,12 +14,78 @@ knitr::opts_chunk$set(echo = TRUE)
 source("/Users/liammcfall/CanisiusBaseball/BlastMergingCleaning.R")
 library(dplyr)
 library(ggplot2)
+library(tidyr)
+library(magrittr)
+library(ggalt)
+library(tibble)
+
+```
+Load data
+ - testing by loading 1 player for month of january
+ 
+```{r}
+
+burlingame <- aggregateBlast('/Users/liammcfall/CanisiusBaseball/BlastData/BlastPlayers/Burlingame/')
+burlingame <- blastClean(burlingame)
+burlingame$week <- as.factor(isoweek(burlingame$Date))
 
 ```
 
+Subset last 2 weeks of data for the player
+
 ```{r}
 
+burlingameSub <- subset(burlingame, week %in% c(3, 4))
 
+```
+
+Metrics tables
+
+```{r}
+
+burlingameGrouped <- burlingameSub %>%
+  group_by(week) %>%
+  summarise("Rotational Acceleration (g)" = mean(Rotational.Acceleration..g.), 
+            "On-Plane Efficiency (%)" = mean(On.Plane.Efficiency....), 
+            "Connection Impact (deg)" = mean(Connection.at.Impact..deg.), 
+            "Early Connection (deg)" = mean(Early.Connection..deg.),
+            "Commit Time (s)" = mean(Time.to.Contact..sec.),
+            "Bat Speed" = mean(Bat.Speed..mph.),
+            "Attack Angle (deg)" = mean(Attack.Angle..deg.)) %>%
+  t() %>%
+  as.data.frame()
+
+colnames(burlingameGrouped) <- c(paste("Week", burlingameGrouped[1,1]), paste("Week", burlingameGrouped[1,2]))
+burlingameGrouped <- burlingameGrouped[-1,]
+burlingameGrouped[,1] <- as.numeric(as.character(burlingameGrouped[,1]))
+burlingameGrouped[,2] <- as.numeric(as.character(burlingameGrouped[,2]))
+burlingameGrouped$Difference <- (burlingameGrouped[,2] - burlingameGrouped[,1])
+
+print(burlingameGrouped)
+
+burlingameSwingCount <- burlingameSub %>%
+  group_by(week) %>%
+  tally(name = "# Swings") %>%
+  t() %>%
+  as.data.frame()
+
+colnames(burlingameSwingCount) <- c(paste("Week", burlingameSwingCount[1,1]), paste("Week", burlingameSwingCount[1,2]))
+burlingameSwingCount <- burlingameSwingCount[-1,]
+
+print(burlingameSwingCount)
+
+```
+
+
+
+
+```{r}
+
+burlingamegg <- ggplot(burlingameSub, aes(x = Bat.Speed..mph., y = Attack.Angle..deg.))
+
+burlingamegg +
+  geom_encircle(aes(fill = week), alpha = .5, expand = .01) +
+  geom_point(aes(color = week))
 
 ```
 
