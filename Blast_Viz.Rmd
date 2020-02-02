@@ -36,9 +36,17 @@ Load data
  
 ```{r}
 
-player <- aggregateBlast('/Users/liammcfall/CanisiusBaseball/BlastData/BlastPlayers/Burlingame/')
+player <- aggregateBlast('/Users/liammcfall/CanisiusBaseball/BlastPlayers/Burlingame/')
 player <- blastClean(player)
 player$week <- as.factor(isoweek(player$Date))
+
+team <- aggregateBlast('/Users/liammcfall/CanisiusBaseball/BlastData/')
+team <- blastClean(team)
+team <- team %>%
+  drop_na(On.Plane.Efficiency....) %>%
+  drop_na(Bat.Speed..mph.) %>%
+  drop_na(Time.to.Contact..sec.) %>%
+  drop_na(Vertical.Bat.Angle..deg.)
 
 ```
 
@@ -93,6 +101,7 @@ Experimentation with charts from the pdf posted in slack
 rotVope <- ggplot(playerSub, aes(x = On.Plane.Efficiency...., y = Rotational.Acceleration..g.)) +
   geom_encircle(aes(fill = week), alpha = .5, expand = .01) +
   geom_point(aes(color = week)) +
+  geom_vline(xintercept = mean(team$On.Plane.Efficiency....)) +
   labs(y = 'Rotational Acceleration (g)', x = 'On Plane Efficieny (%)')
 
 
@@ -103,6 +112,7 @@ rotVope <- ggplot(playerSub, aes(x = On.Plane.Efficiency...., y = Rotational.Acc
 attackVspeed <- ggplot(playerSub, aes(x = Bat.Speed..mph., y = Attack.Angle..deg.)) +
   geom_encircle(aes(fill = week), alpha = .5, expand = .01) +
   geom_point(aes(color = week)) +
+  geom_vline(xintercept = mean(team$Bat.Speed..mph.)) +
   labs(y = 'Attack Angle (deg)', x = 'Bat Speed (mph)')
 
 ```
@@ -112,6 +122,7 @@ attackVspeed <- ggplot(playerSub, aes(x = Bat.Speed..mph., y = Attack.Angle..deg
 rotVcommit <- ggplot(playerSub, aes(x = (Time.to.Contact..sec. * 1000), y = Rotational.Acceleration..g.)) +
   geom_encircle(aes(fill = week), alpha = .5, expand = .01) +
   geom_point(aes(color = week)) +
+  geom_vline(xintercept = mean(team$Time.to.Contact..sec. * 1000)) +
   labs(y = 'Rotational Acceleration (g)', x = 'Time to Contact (ms)')
 
 ```
@@ -121,6 +132,7 @@ rotVcommit <- ggplot(playerSub, aes(x = (Time.to.Contact..sec. * 1000), y = Rota
 conVvert <- ggplot(playerSub, aes(x = Vertical.Bat.Angle..deg., y = Connection.at.Impact..deg.)) +
   geom_encircle(aes(fill = week), alpha = .5, expand = .01) +
   geom_point(aes(color = week)) +
+  geom_vline(xintercept = mean(team$Vertical.Bat.Angle..deg.)) +
   labs(y = 'Connection at Impact (deg)', x = 'Vertical Bat Angle (deg)') +
   scale_x_reverse()
 
@@ -131,6 +143,7 @@ conVvert <- ggplot(playerSub, aes(x = Vertical.Bat.Angle..deg., y = Connection.a
 earlyconVvert <- ggplot(playerSub, aes(x = Vertical.Bat.Angle..deg., y = Early.Connection..deg.)) +
   geom_encircle(aes(fill = week), alpha = .5, expand = .01) +
   geom_point(aes(color = week)) +
+  geom_vline(xintercept = mean(team$Vertical.Bat.Angle..deg.)) +
   labs(y = 'Early Connection (deg)', x = 'Vertical Bat Angle (deg)') +
   scale_x_reverse()
 
@@ -138,7 +151,7 @@ earlyconVvert <- ggplot(playerSub, aes(x = Vertical.Bat.Angle..deg., y = Early.C
 
 ```{r}
 
-print(playerSub)
+print(playerSwingCount)
 print(playerGrouped)
 grid.arrange(attackVspeed, rotVope, rotVcommit, conVvert, earlyconVvert, nrow = 3)
 
