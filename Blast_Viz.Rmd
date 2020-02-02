@@ -13,6 +13,12 @@ knitr::opts_chunk$set(
 )
 ```
 
+STEPS WHEN SCALED
+
+1) Download data for team
+2) Loop through all data to combine in order to get team averages for time period
+3) Loop through each player file, compiling report for that specific player
+
 ```{r}
 
 source("/Users/liammcfall/CanisiusBaseball/BlastMergingCleaning.R")
@@ -30,9 +36,9 @@ Load data
  
 ```{r}
 
-burlingame <- aggregateBlast('/Users/liammcfall/CanisiusBaseball/BlastData/BlastPlayers/Burlingame/')
-burlingame <- blastClean(burlingame)
-burlingame$week <- as.factor(isoweek(burlingame$Date))
+player <- aggregateBlast('/Users/liammcfall/CanisiusBaseball/BlastData/BlastPlayers/Burlingame/')
+player <- blastClean(player)
+player$week <- as.factor(isoweek(player$Date))
 
 ```
 
@@ -46,7 +52,9 @@ Week 4 - 01/20/20 - 01/26/20
 
 ```{r}
 
-burlingameSub <- subset(burlingame, week %in% c(3, 4))
+thisWeek <- as.numeric(readline(prompt = 'Enter week number: '))
+
+playerSub <- subset(player, week %in% c(thisWeek - 1, thisWeek))
 
 ```
 
@@ -54,7 +62,7 @@ Metrics tables
 
 ```{r}
 
-burlingameGrouped <- burlingameSub %>%
+playerGrouped <- playerSub %>%
   group_by(week) %>%
   summarise("Rotational Acceleration (g)" = mean(Rotational.Acceleration..g.), 
             "On-Plane Efficiency (%)" = mean(On.Plane.Efficiency....), 
@@ -66,13 +74,13 @@ burlingameGrouped <- burlingameSub %>%
   t() %>%
   as.data.frame()
 
-colnames(burlingameGrouped) <- c(paste("Week", burlingameGrouped[1,1]), paste("Week", burlingameGrouped[1,2]))
-burlingameGrouped <- burlingameGrouped[-1,]
-burlingameGrouped[,1] <- as.numeric(as.character(burlingameGrouped[,1]))
-burlingameGrouped[,2] <- as.numeric(as.character(burlingameGrouped[,2]))
-burlingameGrouped$Difference <- (burlingameGrouped[,2] - burlingameGrouped[,1])
+colnames(playerGrouped) <- c(paste("Week", playerGrouped[1,1]), paste("Week", playerGrouped[1,2]))
+playerGrouped <- playerGrouped[-1,]
+playerGrouped[,1] <- as.numeric(as.character(playerGrouped[,1]))
+playerGrouped[,2] <- as.numeric(as.character(playerGrouped[,2]))
+playerGrouped$Difference <- (playerGrouped[,2] - playerGrouped[,1])
 
-burlingameSwingCount <- burlingameSub %>%
+playerSwingCount <- playerSub %>%
   group_by(week) %>%
   tally(name = "# Swings")
 
@@ -82,7 +90,7 @@ Experimentation with charts from the pdf posted in slack
 
 ```{r rotVope}
 
-rotVope <- ggplot(burlingameSub, aes(x = On.Plane.Efficiency...., y = Rotational.Acceleration..g.)) +
+rotVope <- ggplot(playerSub, aes(x = On.Plane.Efficiency...., y = Rotational.Acceleration..g.)) +
   geom_encircle(aes(fill = week), alpha = .5, expand = .01) +
   geom_point(aes(color = week)) +
   labs(y = 'Rotational Acceleration (g)', x = 'On Plane Efficieny (%)')
@@ -92,7 +100,7 @@ rotVope <- ggplot(burlingameSub, aes(x = On.Plane.Efficiency...., y = Rotational
 
 ```{r attackVspeed}
 
-attackVspeed <- ggplot(burlingameSub, aes(x = Bat.Speed..mph., y = Attack.Angle..deg.)) +
+attackVspeed <- ggplot(playerSub, aes(x = Bat.Speed..mph., y = Attack.Angle..deg.)) +
   geom_encircle(aes(fill = week), alpha = .5, expand = .01) +
   geom_point(aes(color = week)) +
   labs(y = 'Attack Angle (deg)', x = 'Bat Speed (mph)')
@@ -101,7 +109,7 @@ attackVspeed <- ggplot(burlingameSub, aes(x = Bat.Speed..mph., y = Attack.Angle.
 
 ```{r rotVcommit}
 
-rotVcommit <- ggplot(burlingameSub, aes(x = (Time.to.Contact..sec. * 1000), y = Rotational.Acceleration..g.)) +
+rotVcommit <- ggplot(playerSub, aes(x = (Time.to.Contact..sec. * 1000), y = Rotational.Acceleration..g.)) +
   geom_encircle(aes(fill = week), alpha = .5, expand = .01) +
   geom_point(aes(color = week)) +
   labs(y = 'Rotational Acceleration (g)', x = 'Time to Contact (ms)')
@@ -110,7 +118,7 @@ rotVcommit <- ggplot(burlingameSub, aes(x = (Time.to.Contact..sec. * 1000), y = 
 
 ```{r conVvert}
 
-conVvert <- ggplot(burlingameSub, aes(x = Vertical.Bat.Angle..deg., y = Connection.at.Impact..deg.)) +
+conVvert <- ggplot(playerSub, aes(x = Vertical.Bat.Angle..deg., y = Connection.at.Impact..deg.)) +
   geom_encircle(aes(fill = week), alpha = .5, expand = .01) +
   geom_point(aes(color = week)) +
   labs(y = 'Connection at Impact (deg)', x = 'Vertical Bat Angle (deg)') +
@@ -120,7 +128,7 @@ conVvert <- ggplot(burlingameSub, aes(x = Vertical.Bat.Angle..deg., y = Connecti
 
 ```{r earlyconVvert}
 
-earlyconVvert <- ggplot(burlingameSub, aes(x = Vertical.Bat.Angle..deg., y = Early.Connection..deg.)) +
+earlyconVvert <- ggplot(playerSub, aes(x = Vertical.Bat.Angle..deg., y = Early.Connection..deg.)) +
   geom_encircle(aes(fill = week), alpha = .5, expand = .01) +
   geom_point(aes(color = week)) +
   labs(y = 'Early Connection (deg)', x = 'Vertical Bat Angle (deg)') +
@@ -130,8 +138,8 @@ earlyconVvert <- ggplot(burlingameSub, aes(x = Vertical.Bat.Angle..deg., y = Ear
 
 ```{r}
 
-print(burlingameSwingCount)
-print(burlingameGrouped)
+print(playerSub)
+print(playerGrouped)
 grid.arrange(attackVspeed, rotVope, rotVcommit, conVvert, earlyconVvert, nrow = 3)
 
 ```
