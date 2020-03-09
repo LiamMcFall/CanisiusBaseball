@@ -1,4 +1,5 @@
-source("/Users/liammcfall/CanisiusBaseball/BlastMergingCleaning.R")
+# Input is the selection of the BlastMergingCleaning.R file
+source(file.choose())
 library(Rmisc)
 library(dplyr)
 library(ggplot2)
