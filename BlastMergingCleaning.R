@@ -14,8 +14,9 @@ aggregateBlast <- function(dataDir){
   # Read in csv and add in name var
   for (i in fileList) {
     tempFrame <- read.csv(i, skip = 7)
-    nameSplit <- strsplit(i, split = " ")
-    tempFrame[,"Name"] <- nameSplit[[1]][2]
+    nameSplit <- strsplit(i, split = "_")
+    nameSplit <- strsplit(nameSplit[[1]][2], split = " ")
+    tempFrame[,"Name"] <- nameSplit[[1]][1]
     aggregateBlastFrame <- rbind(aggregateBlastFrame,tempFrame)
   }
   

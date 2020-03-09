@@ -34,8 +34,9 @@ fileList <- list.files()
 # and tables for each
 for(i in fileList){
   
-  nameSplit <- strsplit(i, split = " ")
-  playerName <- nameSplit[[1]][2]
+  nameSplit <- strsplit(i, split = "_")
+  nameSplit <- strsplit(nameSplit[[1]][2], split = " ")
+  playerName <- nameSplit[[1]][1]
   print(playerName)
   
   playerSub <- subset(team, (week %in% c(thisWeek - 1, thisWeek)) & (Name == playerName))
